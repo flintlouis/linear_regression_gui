@@ -1,7 +1,8 @@
 import pygame
 import sys
 import numpy as np
-from draw import *
+import pandas as pd
+import argparse
 
 FPS = 27
 GRAPH_SIZE = 2
@@ -27,7 +28,7 @@ def draw_line(surface, m=0, b=0):
 
 	pygame.draw.line(surface, "red", (x1, y1), (x2, y2), 1)
 
-def draw_data(surface, data):
+def plot_data(surface, data):
 	if len(data) == 0:
 		return
 	for point in data:
@@ -35,7 +36,6 @@ def draw_data(surface, data):
 		x = np.interp(x, [0, MAP], [0, SCREEN_WIDTH])
 		y = np.interp(y, [0, MAP], [SCREEN_HEIGHT, 0])
 		pygame.draw.circle(surface, "purple", (x, y), 5)
-
 
 def least_squares(data):
 	np_data = np.array(data)
@@ -114,10 +114,10 @@ def main():
 		clock.tick(FPS)
 		surface.fill("black")
 		handle_keys(data)
-		draw_data(surface, data)
+		plot_data(surface, data)
 		if len(data) > 1:
-			# m, b = least_squares(data)
-			m, b = gradient_descent(data, m, b, 0.1)
+			m, b = least_squares(data)
+			# m, b = gradient_descent(data, m, b, 0.1)
 			draw_line(surface, m, b)
 		screen.blit(surface, (0,0))
 		display_info(screen, myfont, m, b)
