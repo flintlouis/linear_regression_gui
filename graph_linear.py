@@ -1,7 +1,8 @@
-import pygame
 import sys
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
 import numpy as np
-import pandas as pd
 import argparse
 
 FPS = 27
@@ -9,11 +10,19 @@ GRAPH_SIZE = 2
 NAME = "GRAPH"
 RIGHT_CLICK = (False, False, True)
 LEFT_CLICK = (True, False, False)
-SCREEN_HEIGHT = 500
-SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 800
 MAP = 1
 
 iteration = 0
+
+def usage():
+	parser = argparse.ArgumentParser(description="Visualization of gradient descent or least squares")
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument("-g", "--gradient", action="store_true", default=True, help="use gradient descent")
+	group.add_argument("-l", "--leastsquares", action="store_true", default=False, help="use least squares")
+	args = parser.parse_args()
+	return args
 
 def draw_line(surface, m=0, b=0):
 	x1 = 0
@@ -101,23 +110,30 @@ def display_info(screen, myfont, m, b):
 	screen.blit(text, (10,10))
 	text = myfont.render(f"iteration {iteration}", 1, "white")
 	screen.blit(text, (10,25))
-	return text
 
-def main():
+def load_pygame():
+	print("Loading...")
 	clock = pygame.time.Clock()
 	surface, screen = init_pygame()
+	myfont = pygame.font.SysFont("arialblack", 15)
+	os.system("clear")
+	return clock, surface, screen, myfont
+
+def main():
+	args = usage()
+	clock, surface, screen, myfont = load_pygame()
 	data = []
 	m, b = 0, 0
-	myfont = pygame.font.SysFont("arialblack", 15)
-
 	while True:
 		clock.tick(FPS)
 		surface.fill("black")
 		handle_keys(data)
 		plot_data(surface, data)
 		if len(data) > 1:
-			m, b = least_squares(data)
-			# m, b = gradient_descent(data, m, b, 0.1)
+			if args.leastsquares:
+				m, b = least_squares(data)
+			else:
+				m, b = gradient_descent(data, m, b, 0.1)
 			draw_line(surface, m, b)
 		screen.blit(surface, (0,0))
 		display_info(screen, myfont, m, b)
